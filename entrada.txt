@@ -1,0 +1,8 @@
+float resultado = (10.5 + 5) * 2;
+if (resultado >= 30) {
+    resultado--;
+}
+
+// Teste de erro
+.0
+@ 0.0.0.0.0
