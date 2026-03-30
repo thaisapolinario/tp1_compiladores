@@ -59,8 +59,9 @@ class Scanner:
 
             # ERRO LÉXICO
             char_erro = self.entrada[self.pos]
-            self.pos += 1
-            self.coluna += 1
+            while not self.eof() and self.entrada[self.pos] not in [';', '\n']:
+                self.pos += 1
+                self.coluna += 1
             return Token("ERRO", char_erro, "ERRO_LEXICO", self.linha, coluna_inicial)
 
         return None
