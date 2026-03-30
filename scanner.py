@@ -14,6 +14,11 @@ class Scanner:
 
     def eof(self):
         return self.pos >= len(self.entrada) # verifica se chegou no final da entrada, se o ponteiro esta fora da entrada
+    
+    def batedor(self):
+        if self.pos + 1 < len(self.entrada):
+            return self.entrada[self.pos + 1]
+        return None
 
     def proximo_token(self):
         while not self.eof():
@@ -27,7 +32,6 @@ class Scanner:
                 self.pos += 1
                 continue
 
-            posicao_inicial = self.pos
             coluna_inicial = self.coluna
             
             #tabela de definicoes definidas em tokens.py
@@ -40,6 +44,10 @@ class Scanner:
                     
                     # Se for comentario
                     if nome.startswith('COMENTARIO'): 
+                        if nome == 'COMENTARIO_BLOCO' and not lexema.endswith('*/'):
+                            self.pos += len(lexema)
+                            return Token("ERRO", lexema, "COMENTARIO_ABERTO", self.linha, coluna_inicial)
+
                         quebras_linha = lexema.count('\n')
                         if quebras_linha > 0:
                             self.linha += quebras_linha # se for mais de uma linha de comentario

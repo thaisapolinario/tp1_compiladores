@@ -1,12 +1,6 @@
-float resultado = (10.5 + 5) * 2;
-if (resultado >= 30) {
-    resultado--;  @ 
-} 
+if (x >= 10 && y == 20) {
+    x = 5;
+}
 
-
-
-// Teste de erro
-.0  
-@ 0.0.0.0.0  
-
-*/ 
+float erro = @#$%! 99.9; 
+int final = 100;
