@@ -27,4 +27,4 @@ class Token:
         self.coluna = coluna # onde foi encontrado
 
     def __repr__(self):
-        return f"| {self.cod:<15} | {self.lexema:<15} | {self.classe:<15} | {self.linha:<15} | {self.coluna:<15} |"
+        return f"| {self.cod:<5} | {self.lexema:<15} | {self.classe:<15} | {self.linha:<15} | {self.coluna:<15} |"

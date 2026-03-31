@@ -1,20 +1,18 @@
-import re  # importa o regex
-
-#PERCORRE A ENTRADA CARACTERE POR CARACTERE E TENTA ACHAR UM CASAMENTO COM AS REGRAS DEFINIDAS
-
+import re
 from tokens import DEFINICAO_CONJUNTOS, Token
 
 class Scanner:
     def __init__(self, entrada):
-        self.entrada = entrada # conteudo do codigo fonte
-        self.pos = 0  # começa na posicao 0, indica o caractere atual
-        self.linha = 0 # contador linha
-        self.coluna = 0 # contador coluna
-        self.contador_cod = 0 # identificador de cada token
+        self.entrada = entrada
+        self.pos = 0        # pivo 
+        self.linha = 1      # contador linha
+        self.coluna = 1        # contador coluna
+        self.contador_cod = 0  # identificador de cada token
 
     def eof(self):
-        return self.pos >= len(self.entrada) # verifica se chegou no final da entrada, se o ponteiro esta fora da entrada
-    
+        return self.pos >= len(self.entrada)  # verifica se chegou no final da entrada, se o ponteiro esta fora da entrada
+
+    # verificar o proximo caractere sem mover o pivo
     def batedor(self):
         if self.pos + 1 < len(self.entrada):
             return self.entrada[self.pos + 1]
@@ -23,53 +21,94 @@ class Scanner:
     def proximo_token(self):
         while not self.eof():
             char_atual = self.entrada[self.pos]
-            if char_atual.isspace(): 
+
+            # Ignora espaços
+            if char_atual.isspace():
                 if char_atual == '\n':
-                    self.linha += 1  # pula a linha se ler uma quebra de linha 
+                    self.linha += 1
                     self.coluna = 1
                 else:
-                    self.coluna += 1 # se nao for enter, so anda a coluna
+                    self.coluna += 1
                 self.pos += 1
                 continue
 
-            coluna_inicial = self.coluna
+            # deferenciar 
+            proximo = self.batedor()
             
-            #tabela de definicoes definidas em tokens.py
+            # + do ++
+            if char_atual == '+' and proximo == '+':
+                lexema = "++"
+                t = Token(self.cod_token(), lexema, "OPERADOR_ARIT", self.linha, self.coluna)
+                self.move_pivo(2)
+                return t
+            
+            # - do --
+            if char_atual == '-' and proximo == '-':
+                lexema = "--"
+                t = Token(self.cod_token(), lexema, "OPERADOR_ARIT", self.linha, self.coluna)
+                self.move_pivo(2)
+                return t
+
+            if char_atual == '>' and proximo == '=':
+                t = Token(self.cod_token(), ">=", "OPERADOR_LOGICO", self.linha, self.coluna)
+                self.move_pivo(2)   
+                return t
+
+            if char_atual == '<' and proximo == '=':
+                t = Token(self.cod_token(), "<=", "OPERADOR_LOGICO", self.linha, self.coluna)
+                self.move_pivo(2)   
+                return t
+
+            if char_atual == '=' and proximo == '=':
+                t = Token(self.cod_token(), "==", "OPERADOR_LOGICO", self.linha, self.coluna)
+                self.move_pivo(2)   
+                return t
+
+            if char_atual == '!' and proximo == '=':
+                t = Token(self.cod_token(), "!=", "OPERADOR_LOGICO", self.linha, self.coluna)
+                self.move_pivo(2)   
+                return t
+
+            # REGEX PARA OS DEMAIS TOKENS
+            coluna_inicial = self.coluna
             for nome, regex in DEFINICAO_CONJUNTOS:
                 padrao = re.compile(regex)
-                casamento = padrao.match(self.entrada, self.pos) #procura o padrao na posicao
-                
+                casamento = padrao.match(self.entrada, self.pos)
+
                 if casamento:
-                    lexema = casamento.group() # se encontrar um padrao, retorna o texto encontrado
+                    lexema = casamento.group()
                     
-                    # Se for comentario
-                    if nome.startswith('COMENTARIO'): 
-                        if nome == 'COMENTARIO_BLOCO' and not lexema.endswith('*/'):
-                            self.pos += len(lexema)
-                            return Token("ERRO", lexema, "COMENTARIO_ABERTO", self.linha, coluna_inicial)
+                    # Se for comentário, pula e chama proximo_token de novo (Recursão)
+                    if nome.startswith('COMENTARIO'):
+                        self.atualizar_posicao_comentario(lexema, nome)
+                        return self.proximo_token()
 
-                        quebras_linha = lexema.count('\n')
-                        if quebras_linha > 0:
-                            self.linha += quebras_linha # se for mais de uma linha de comentario
-                            self.coluna = len(lexema.split('\n')[-1]) + 1
-                        else:
-                            self.coluna += len(lexema)
-                        self.pos += len(lexema)
-                        return self.proximo_token() # Busca o próximo token real
 
-                    # Atualiza posição para tokens normais
-                    self.pos += len(lexema)
-                    self.coluna += len(lexema)
-                    
-                    # Incrementa o cod do token
-                    self.contador_cod += 1  # gera o codigo do token
-                    return Token(self.contador_cod, lexema, nome, self.linha, coluna_inicial)
+                    t = Token(self.cod_token(), lexema, nome, self.linha, coluna_inicial)
+                    self.move_pivo(len(lexema))
+                    return t
 
             # ERRO LÉXICO
-            char_erro = self.entrada[self.pos]
-            while not self.eof() and self.entrada[self.pos] not in [';', '\n']:
-                self.pos += 1
-                self.coluna += 1
-            return Token("ERRO", char_erro, "ERRO_LEXICO", self.linha, coluna_inicial)
+            t_erro = Token("ERRO", char_atual, "ERRO_LEXICO", self.linha, self.coluna)
+            self.move_pivo(1)
+            return t_erro
 
         return None
+
+    # move o pivo apos reconhecer um token e atualiza a coluna
+    def move_pivo(self, n):
+        self.pos += n
+        self.coluna += n
+    # a cada token reconhecido, aumenta o contador de tokens para gerar um id unico
+    def cod_token(self):
+        self.contador_cod += 1
+        return self.contador_cod
+
+    def atualizar_posicao_comentario(self, lexema, tipo):
+        quebras = lexema.count('\n')
+        if quebras > 0:
+            self.linha += quebras
+            self.coluna = len(lexema.split('\n')[-1]) + 1
+        else:
+            self.coluna += len(lexema)
+        self.pos += len(lexema)

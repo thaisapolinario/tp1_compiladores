@@ -9,11 +9,11 @@ def main():
         return
 
     lex = Scanner(conteudo)
-
-    print("-" * 100)
-    print(f"{'Cod':<15} | {'Token':<15} | {'Classe':<15} | {'Linha':<15} | {'Coluna':<15}")
-    print("-" * 100)
     
+    print("-" * 67)
+    print(f"| {'Cod':<5} | {'Token':<15} | {'Classe':<20} | {'Linha':<6} | {'Col':<6} |")
+    print("-" * 67)
+
     while not lex.eof():
         token = lex.proximo_token()
         if token:

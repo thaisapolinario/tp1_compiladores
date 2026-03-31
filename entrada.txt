@@ -2,5 +2,5 @@ if (x >= 10 && y == 20) {
     x = 5;
 }
 
-float erro = @#$%! 99.9; 
+float teste = @#$%! 99.9; 
 int final = 100;
