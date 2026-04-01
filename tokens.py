@@ -6,6 +6,7 @@ import re
 
 
 DEFINICAO_CONJUNTOS = [
+    ('ID_INVALIDO', r'\d+[a-zA-Z_]+[a-zA-Z0-9_]*'),
     ('COMENTARIO_BLOCO', r'/\*[\s\S]*?\*/'),   
     ('COMENTARIO_LINHA', r'//.*'),             
     ('RESERVADA',    r'\b(if|for|int|bool|string|float)\b'),
