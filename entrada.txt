@@ -1,6 +1,9 @@
-if (x >= 10 && y == 20) {
-    x = 5;
+int x = 10;
+x++;
+/* Comentário 
+   multilinha 
+if (x == 11) {
+    float y = 0.5;
 }
-int 123abc;
-float teste = @#$%! 99.9; 
-int final = 100;
+// Teste de erro:
+123var

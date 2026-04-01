@@ -6,19 +6,15 @@ import re
 
 
 DEFINICAO_CONJUNTOS = [
-    ('ID_INVALIDO', r'\d+[a-zA-Z_]+[a-zA-Z0-9_]*'),
-    ('COMENTARIO_BLOCO', r'/\*[\s\S]*?\*/'),   
-    ('COMENTARIO_LINHA', r'//.*'),             
-    ('RESERVADA',    r'\b(if|for|int|bool|string|float)\b'),
-    ('OPERADOR_LOGICO',       r'(&&|\|\|)'), 
-    ('OPERADOR_COMP',  r'(==|!=|<=|>=|<|>)'),
-    ('OPERADOR_ARIT',        r'(\+|\-|\*|/)'),
-    ('ATRIBUICAO',        r'='),
-    ('IDENTIFICADORES',           r'[a-zA-Z_][a-zA-Z0-9_]*'),
-    ('NUMEROS',r'\d+\.\d+|\d+'),
-    ('SEPARADORES',          r'[\(\)\{\};,]'),
+    ('COMENTARIO_BLOCO', r'/\*[\s\S]*?\*/'),
+    ('COMENTARIO_LINHA', r'//.*'),
+    ('ID_INVALIDO', r'\d+[a-zA-Z_][a-zA-Z0-9_]*'),
+    ('RESERVADA', r'\b(if|else|for|while|int|bool|string|float|return)\b'),
+    ('IDENTIFICADORES', r'[a-zA-Z_][a-zA-Z0-9_]*'),
+    ('NUMEROS', r'\d+\.\d+|\d+'),
+    ('SEPARADORES', r'[\(\)\{\}\[\];,]'),
+    ('OPERADOR', r'[\*/]'),
 ]
-
 class Token:
     def __init__(self, cod, lexema, classe, linha, coluna):
         self.cod = cod  # codigo do token

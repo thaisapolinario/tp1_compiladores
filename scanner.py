@@ -1,6 +1,5 @@
 import re
 from tokens import DEFINICAO_CONJUNTOS, Token
-
 class Scanner:
     def __init__(self, entrada):
         self.entrada = entrada
@@ -34,59 +33,87 @@ class Scanner:
 
             # deferenciar 
             proximo = self.batedor()
-            
+            coluna_inicial = self.coluna
+
+            if char_atual == '/' and proximo == '*':
+                if self.entrada.find('*/', self.pos + 2) == -1:
+                    self.pos = len(self.entrada) # Encerra o processamento
+                    return Token("ERRO", "/*", "ERRO_LEXICO", self.linha, coluna_inicial)
+
             # + do ++
-            if char_atual == '+' and proximo == '+':
-                lexema = "++"
-                t = Token(self.cod_token(), lexema, "OPERADOR_ARIT", self.linha, self.coluna)
-                self.pos += 2
-                self.coluna += 2          
-                return t
+            if char_atual == '+':
+                if proximo == '+':
+                    lexema = "++"
+                    self.pos += 2
+                    self.coluna += 2          
+                    return Token(self.cod_token(), "++", "OPERADOR", self.linha, coluna_inicial)
+            
+                else:
+                    self.pos += 1
+                    self.coluna += 1
+                    return Token(self.cod_token(), "+", "OPERADOR", self.linha, coluna_inicial)
             
             # - do --
             if char_atual == '-' and proximo == '-':
                 lexema = "--"
-                t = Token(self.cod_token(), lexema, "OPERADOR_ARIT", self.linha, self.coluna)
                 self.pos += 2
                 self.coluna += 2          
-                return t
+                return Token(self.cod_token(), lexema, "OPERADOR", self.linha, coluna_inicial)
 
-            if char_atual == '>' and proximo == '=':
-                t = Token(self.cod_token(), ">=", "OPERADOR_LOGICO", self.linha, self.coluna)
-                self.pos += 2
-                self.coluna += 2             
-                return t
+            if char_atual == '>':
+                if proximo == '=':
+                    self.pos += 2; self.coluna += 2
+                    return Token(self.cod_token(), ">=", "OPERADOR", self.linha, coluna_inicial)
+                self.pos += 1; self.coluna += 1
+                return Token(self.cod_token(), ">", "OPERADOR", self.linha, coluna_inicial)
 
-            if char_atual == '<' and proximo == '=':
-                t = Token(self.cod_token(), "<=", "OPERADOR_LOGICO", self.linha, self.coluna)
-                self.pos += 2
-                self.coluna += 2             
-                return t
+            if char_atual == '<':
+                if proximo == '=':
+                    self.pos += 2; self.coluna += 2
+                    return Token(self.cod_token(), "<=", "OPERADOR", self.linha, coluna_inicial)
+                self.pos += 1; self.coluna += 1
+                return Token(self.cod_token(), "<", "OPERADOR", self.linha, coluna_inicial)
+                        
 
-            if char_atual == '=' and proximo == '=':
-                t = Token(self.cod_token(), "==", "OPERADOR_LOGICO", self.linha, self.coluna)
-                self.pos += 2
-                self.coluna += 2             
-                return t
+            if char_atual == '=':
+                if proximo == '=':
+                    self.pos += 2
+                    self.coluna += 2
+                    return Token(self.cod_token(), "==", "OPERADOR", self.linha, coluna_inicial)
+                else:
+                    self.pos += 1
+                    self.coluna += 1
+                    return Token(self.cod_token(), "=", "ATRIBUICAO", self.linha, coluna_inicial)
+                
 
-            if char_atual == '!' and proximo == '=':
-                t = Token(self.cod_token(), "!=", "OPERADOR_LOGICO", self.linha, self.coluna)
+            if char_atual == '&' and proximo == '&':
                 self.pos += 2
-                self.coluna += 2           
-                return t
+                self.coluna += 2
+                return Token(self.cod_token(), "&&", "OPERADOR", self.linha, coluna_inicial) 
+            
+            
+            if char_atual == '|' and proximo == '|':
+                self.pos += 2; self.coluna += 2
+                return Token(self.cod_token(), "||", "OPERADOR", self.linha, coluna_inicial)
+
+
+            if char_atual == '!':
+                if proximo == '=':
+                    self.pos += 2; self.coluna += 2
+                    return Token(self.cod_token(), "!=", "OPERADOR", self.linha, coluna_inicial)
+                self.pos += 1; self.coluna += 1
+                return Token(self.cod_token(), "!", "OPERADOR", self.linha, coluna_inicial)
 
             # REGEX PARA OS DEMAIS TOKENS
-            coluna_inicial = self.coluna
 
             for nome, regex in DEFINICAO_CONJUNTOS:
                 padrao = re.compile(regex)
                 casamento = padrao.match(self.entrada, self.pos)
-
+               
                 if casamento:
                     lexema = casamento.group()
                 
                 # Se for comentário, pula e chama proximo_token de novo 
-                            
                     if nome == "ID_INVALIDO":
                         t = Token("ERRO", lexema, "ERRO_LEXICO", self.linha, coluna_inicial)
                         self.pos += len(lexema)
@@ -102,7 +129,7 @@ class Scanner:
                         else:
                             self.coluna += len(lexema)
 
-                        continue
+                        return self.proximo_token()
 
                     t = Token(self.cod_token(), lexema, nome, self.linha, coluna_inicial)
 
@@ -123,7 +150,6 @@ class Scanner:
             return t_erro
 
         return None
-
     # a cada token reconhecido, aumenta o contador de tokens para gerar um id unico
     def cod_token(self):
         cod = self.contador_cod
